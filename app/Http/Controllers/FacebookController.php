@@ -24,7 +24,8 @@ class FacebookController extends Controller
         $message = $request->input('message');
         $description = $request->input('description');
         $link = $request->input('link');
-        $image = $request->input('image');
+        $image = $request->input('image_url');
+        $html_url = $request->input('html_url');
 
         // Upload the image to Facebook and get media ID
         // $imagePath = $image;//public_path('images/'.$image);
@@ -33,8 +34,9 @@ class FacebookController extends Controller
         try {
             $mediaId = null;
             $imgData = null;
+
+            $caption = $link ? $message : $message . ' ' . $link;
             if ($image) { 
-                $caption = $link ? $message : $message . ' ' . $link;
                 if (str_starts_with($image, 'data:image/jpeg;base64')) {
                     $imageContents = file_get_contents($image);
                     $tempImagePath = tempnam(sys_get_temp_dir(), 'fb_image');
@@ -42,12 +44,6 @@ class FacebookController extends Controller
                     $imgData = [
                         'caption' => $caption,
                         'source' => $fb->fileToUpload($tempImagePath)
-                    ];
-                } else if (is_numeric($image)) {
-                    $tempImagePath = PDFController::generateImage($image);
-                    $imgData = [
-                        'caption' => $caption,
-                        'url' => $tempImagePath
                     ];
                 } else {
                     $tempImagePath = $image;
@@ -60,9 +56,16 @@ class FacebookController extends Controller
                 $response = $fb->post('/me/photos', $imgData, $accessToken);
                 // $graphNode = $imageResponse->getGraphNode();
                 // $mediaId = $imageGraphNode['id'];
+            } else if ($html_url) {
+                $tempImagePath = PDFController::generateImage($html_url);
+                $imgData = [
+                    'caption' => $caption,
+                    'url' => $tempImagePath
+                ];
+                $response = $fb->post('/me/photos', $imgData, $accessToken);
             } else {
                 $response = $fb->post('/me/feed', [
-                    'caption' => $message,
+                    'caption' => $caption,
                     'description' => $description,
                     'link' => $link,
                     // 'attached_media' => [

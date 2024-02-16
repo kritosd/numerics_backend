@@ -10,21 +10,18 @@ class PDFController extends Controller
 {
     public function generateHtmlToPDF(Request $request) {
 
-        $id = $request->input('id');
+        $html_url = $request->input('html_url');
 
-        $url = $this->generateImage($id);
+        $url = $this->generateImage($html_url);
 
         return json_encode(array('url'=> $url));
     }
 
-    public function generateImage($id)
+    public function generateImage($html_url)
     {
-        if (!is_numeric($id)) {
-            return json_encode(array('error'=> true, 'message'=> 'id should be numeric'));
-        }
 
         // GENERATE PDF FROM HTML
-        $html = file_get_contents('https://kino20.gr/PHP_Files/Kino_Get_Specific_Draw.php?id='.$id);
+        $html = file_get_contents($html_url);
         
         // change font familyt to display greek lang.
         $html = '<style> body { font-family: DejaVu Sans, sans-serif; } </style>' . $html;
