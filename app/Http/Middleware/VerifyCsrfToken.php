@@ -14,6 +14,7 @@ class VerifyCsrfToken extends Middleware
     protected $except = [
         '/facebook',
         '/upload/image',
-        'generate-pdf'
+        'generate-pdf',
+        '/import'
     ];
 }
